@@ -1,0 +1,19 @@
+# DVC pipeline: `dvc repro` re-runs training only when the dataset, code or params changed.
+# Dataset versioning itself is done with:  dvc add data/raw/disease_data.csv
+stages:
+  train:
+    cmd: python -m src.train
+    deps:
+      - data/raw/disease_data.csv
+      - src/train.py
+      - src/modeling.py
+      - src/registry.py
+    params:
+      - data
+      - models
+      - retraining.min_improvement
+    outs:
+      - data/reference/reference.csv
+    metrics:
+      - models/champion_meta.json:
+          cache: false

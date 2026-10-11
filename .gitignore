@@ -1,0 +1,12 @@
+.venv/
+.idea/
+__pycache__/
+*.pyc
+mlflow.db
+mlruns/
+mlartifacts/
+models/
+reports/
+data/production/
+.pytest_cache/
+data/reference/reference.csv

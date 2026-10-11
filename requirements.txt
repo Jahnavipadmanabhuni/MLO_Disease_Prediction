@@ -1,0 +1,13 @@
+# Versions below are the ones this project was tested with (pinned for reproducibility).
+pandas==3.0.2
+numpy==2.4.4
+scikit-learn==1.8.0
+xgboost==3.4.1
+joblib==1.5.3
+PyYAML==6.0.3
+mlflow==3.17.0
+evidently==0.7.23
+fastapi==0.143.0
+uvicorn==0.54.0
+Jinja2==3.1.6
+httpx==0.28.1

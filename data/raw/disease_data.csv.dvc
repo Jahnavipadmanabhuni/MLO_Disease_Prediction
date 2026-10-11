@@ -1,0 +1,5 @@
+outs:
+- md5: 36ef22733d45106dbc9225c20fa18b0b
+  size: 29490
+  hash: md5
+  path: disease_data.csv

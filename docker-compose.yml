@@ -1,0 +1,32 @@
+# Two containers built from the same image:
+#   mlflow : tracking server + model registry UI   -> http://localhost:5000
+#   api    : FastAPI model server + dashboard       -> http://localhost:8000
+#
+# First-time setup (train the first champion model inside the stack):
+#   docker compose up -d mlflow
+#   docker compose run --rm api python -m src.train
+#   docker compose up -d api
+services:
+  mlflow:
+    build: .
+    command: >
+      mlflow server --host 0.0.0.0 --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --artifacts-destination /mlflow/artifacts
+      --allowed-hosts "*"
+    ports: ["5000:5000"]
+    volumes: ["mlflow_data:/mlflow"]
+
+  api:
+    build: .
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    ports: ["8000:8000"]
+    depends_on: [mlflow]
+    volumes:
+      - ./data:/app/data        # raw data, reference data and production prediction logs
+      - ./models:/app/models    # local champion fallback copy
+      - ./reports:/app/reports  # drift reports + monitoring summary
+
+volumes:
+  mlflow_data:

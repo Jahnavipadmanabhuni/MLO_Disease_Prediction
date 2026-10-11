@@ -1,0 +1,24 @@
+# Every tunable lives here, so DVC / MLflow can track it and you never edit code to change a threshold.
+data:
+  test_size: 0.2
+  seed: 42
+
+models:
+  decision_tree:
+    criterion: entropy
+    max_depth: 10
+    min_samples_leaf: 2
+  xgboost:
+    n_estimators: 150
+    max_depth: 4
+    learning_rate: 0.1
+
+monitoring:
+  min_current_rows: 100          # need at least this many logged predictions to judge drift
+  drift_share_threshold: 0.30    # retrain if >= 30% of features drifted
+  min_labeled_rows: 50           # need this many confirmed diagnoses to judge live accuracy
+  f1_drop_threshold: 0.05        # retrain if live macro-F1 falls this far below the champion's test F1
+
+retraining:
+  holdout_fraction: 0.30         # share of recent labeled data kept aside to compare champion vs challenger
+  min_improvement: 0.01          # challenger must beat champion's F1 by this much to be promoted

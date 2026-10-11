@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MedPredict - Interview-Grade Clinical Diagnostic & Symptom Analysis System using Decision Tree Machine Learning.">
+    <title>MedPredict - Smart Diagnostic System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --bg-gradient: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #090d16 80%);
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --accent-primary: #6366f1;
+            --accent-secondary: #a855f7;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --font-display: 'Outfit', sans-serif;
+            --font-sans: 'Inter', sans-serif;
+            --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-color);
+            background-image: linear-gradient(135deg, rgba(11, 15, 25, 0.88) 0%, rgba(9, 13, 22, 0.94) 100%), url('/static/hospital_bg.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            flex-grow: 1;
+        }
+
+        /* Header Layout */
+        header {
+            text-align: center;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+
+
+        header h1 {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 10%, #a5b4fc 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        /* Two Column Workspace Grid */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card styles */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 2.25rem;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.01em;
+        }
+
+        .card-title .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-secondary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-secondary);
+        }
+
+        /* Symptoms Categories and Columns */
+        .category-title {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent-primary);
+            margin: 1.5rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .category-title:first-of-type {
+            margin-top: 0;
+        }
+
+        .category-title::after {
+            content: '';
+            flex-grow: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .symptom-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Symptom Selector Cards */
+        .symptom-card {
+            background: rgba(9, 13, 22, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 1.25rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            position: relative;
+            user-select: none;
+        }
+
+        .symptom-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(99, 102, 241, 0.25);
+            background: rgba(17, 24, 39, 0.8);
+            box-shadow: 0 8px 20px -8px rgba(99, 102, 241, 0.3);
+        }
+
+        .symptom-card.active {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(168, 85, 247, 0.04) 100%);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px -3px rgba(99, 102, 241, 0.3);
+        }
+
+        .symptom-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            transition: var(--transition);
+        }
+
+        .symptom-card.active .symptom-icon {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.25);
+            border-color: transparent;
+        }
+
+        .symptom-name {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .symptom-card.active .symptom-name {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .symptom-badge {
+            position: absolute;
+            top: 0.65rem;
+            right: 0.65rem;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            transition: var(--transition);
+        }
+
+        .symptom-card.active .symptom-badge {
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 8px var(--accent-primary);
+        }
+
+        /* Buttons Layout */
+        .action-bar {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            font-family: var(--font-display);
+            font-size: 1.05rem;
+            font-weight: 600;
+            padding: 0.95rem 1.75rem;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border: none;
+            outline: none;
+        }
+
+        .btn-primary {
+            flex-grow: 2;
+            color: white;
+            background: linear-gradient(135deg, #6366f1, #a855f7, #6366f1);
+            background-size: 200% 200%;
+            animation: gradient-shift 5s ease infinite;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+            filter: brightness(1.1);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Right Panel Output UI */
+        .output-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 480px;
+        }
+
+        .placeholder-state {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.25rem;
+            color: var(--text-secondary);
+            padding: 2rem;
+        }
+
+        .placeholder-icon {
+            font-size: 3.5rem;
+            animation: pulse-slow 3s infinite ease-in-out;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .placeholder-text {
+            max-width: 280px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Loading Indicator */
+        .loading-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(99, 102, 241, 0.1);
+            border-top: 4px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Diagnostic Result Panel styling */
+        .diagnostic-result {
+            display: none;
+            flex-direction: column;
+            gap: 1.75rem;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .diagnostic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 1.25rem;
+        }
+
+        .prediction-title {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #ffffff, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .severity-badge {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+            padding: 0.35rem 0.85rem;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .severity-low {
+            background-color: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+
+        .severity-medium {
+            background-color: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+        }
+
+        .severity-high {
+            background-color: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+        }
+
+        /* Confidence bar */
+        .confidence-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .confidence-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .confidence-label {
+            color: var(--text-secondary);
+        }
+
+        .confidence-value {
+            color: var(--accent-secondary);
+        }
+
+        .bar-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            border-radius: 999px;
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Clinical Description */
+        .disease-desc-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            padding: 1.25rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        /* Precautions Checklist */
+        .checklist-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .checklist-title {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .precaution-item {
+            background: rgba(9, 13, 22, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 0.95rem 1.15rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .precaution-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .precaution-checkbox {
+            margin-top: 0.25rem;
+            accent-color: var(--accent-primary);
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+
+        .precaution-text {
+            font-size: 0.88rem;
+            line-height: 1.45;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .precaution-item.checked {
+            opacity: 0.55;
+        }
+
+        .precaution-item.checked .precaution-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* Technical details accordion */
+        .technical-details {
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 1.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .tech-summary-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: var(--font-sans);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            outline: none;
+        }
+
+        .tech-summary-btn:hover {
+            color: var(--text-secondary);
+        }
+
+        .tech-summary-content {
+            display: none;
+            margin-top: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .tech-summary-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+        }
+
+        .tech-summary-content td {
+            padding: 0.35rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .tech-summary-content td:first-child {
+            font-weight: 600;
+            color: var(--text-muted);
+            width: 55%;
+        }
+
+
+
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse-slow {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 30px rgba(99, 102, 241, 0.08); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Ambient Glowing Background Orbs */
+        .bg-orbs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.12;
+            animation: float-orb 12s infinite alternate ease-in-out;
+        }
+        .orb-1 {
+            top: 10%;
+            left: 10%;
+            width: 320px;
+            height: 320px;
+            background: #6366f1;
+        }
+        .orb-2 {
+            bottom: 15%;
+            right: 10%;
+            width: 400px;
+            height: 400px;
+            background: #a855f7;
+            animation-delay: -6s;
+        }
+        @keyframes float-orb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(60px, -40px) scale(1.15); }
+        }
+    </style>
+</head>
+<body>
+<div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+</div>
+
+<div class="container">
+    <!-- Header -->
+    <header>
+
+        <h1>MedPredict</h1>
+        <p>Smart Diagnostic Engine powered by a monitored ML pipeline (XGBoost / Decision Tree). Select your symptoms to run real-time inference..</p>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="workspace">
+        
+        <!-- Left Side: Symptoms Selector Card -->
+        <section class="card">
+            <div class="card-title">
+                <span class="dot"></span>Select Present Symptoms
+            </div>
+
+            <!-- Category: Systemic -->
+            <div class="category-title">Systemic & General</div>
+            <div class="symptom-grid" role="group" aria-label="Systemic Symptoms">
+                <div class="symptom-card" id="card-fever" onclick="toggleSymptom('fever')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">🔥</div>
+                    <div class="symptom-name">Fever</div>
+                </div>
+                <div class="symptom-card" id="card-fatigue" onclick="toggleSymptom('fatigue')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">💤</div>
+                    <div class="symptom-name">Fatigue</div>
+                </div>
+                <div class="symptom-card" id="card-body_ache" onclick="toggleSymptom('body_ache')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">🤕</div>
+                    <div class="symptom-name">Body Ache</div>
+                </div>
+                <div class="symptom-card" id="card-joint_pain" onclick="toggleSymptom('joint_pain')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">🦴</div>
+                    <div class="symptom-name">Joint Pain</div>
+                </div>
+                <div class="symptom-card" id="card-nausea" onclick="toggleSymptom('nausea')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">🤢</div>
+                    <div class="symptom-name">Nausea</div>
+                </div>
+                <div class="symptom-card" id="card-skin_rash" onclick="toggleSymptom('skin_rash')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">🔴</div>
+                    <div class="symptom-name">Skin Rash</div>
+                </div>
+            </div>
+
+            <!-- Category: Respiratory -->
+            <div class="category-title">Respiratory</div>
+            <div class="symptom-grid" role="group" aria-label="Respiratory Symptoms">
+                <div class="symptom-card" id="card-cough" onclick="toggleSymptom('cough')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">💨</div>
+                    <div class="symptom-name">Cough</div>
+                </div>
+                <div class="symptom-card" id="card-sore_throat" onclick="toggleSymptom('sore_throat')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">🗣️</div>
+                    <div class="symptom-name">Sore Throat</div>
+                </div>
+                <div class="symptom-card" id="card-runny_nose" onclick="toggleSymptom('runny_nose')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">💧</div>
+                    <div class="symptom-name">Runny Nose</div>
+                </div>
+                <div class="symptom-card" id="card-sneezing" onclick="toggleSymptom('sneezing')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">🤧</div>
+                    <div class="symptom-name">Sneezing</div>
+                </div>
+                <div class="symptom-card" id="card-shortness_of_breath" onclick="toggleSymptom('shortness_of_breath')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">🫁</div>
+                    <div class="symptom-name">Short of Breath</div>
+                </div>
+            </div>
+
+            <!-- Category: Sensory -->
+            <div class="category-title">Sensory & Neurological</div>
+            <div class="symptom-grid" role="group" aria-label="Sensory Symptoms">
+                <div class="symptom-card" id="card-headache" onclick="toggleSymptom('headache')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">🧠</div>
+                    <div class="symptom-name">Headache</div>
+                </div>
+                <div class="symptom-card" id="card-loss_of_taste_smell" onclick="toggleSymptom('loss_of_taste_smell')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">👃</div>
+                    <div class="symptom-name">Taste/Smell Loss</div>
+                </div>
+                <div class="symptom-card" id="card-itchy_eyes" onclick="toggleSymptom('itchy_eyes')">
+                    <div class="symptom-badge"></div>
+                    <div class="symptom-icon">👁️</div>
+                    <div class="symptom-name">Itchy Eyes</div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="action-bar">
+                <button id="btn-reset" class="btn btn-secondary" onclick="resetSymptoms()">
+                    Clear All
+                </button>
+                <button id="btn-submit" class="btn btn-primary" onclick="submitDiagnostic()">
+                    Run Diagnostics
+                </button>
+            </div>
+        </section>
+
+        <!-- Right Side: Diagnostic Output Card -->
+        <section class="card output-card" id="output-section">
+            
+            <!-- Placeholder State -->
+            <div id="panel-placeholder" class="placeholder-state">
+                <div class="placeholder-icon">⚕️</div>
+                <h3>Awaiting Analysis</h3>
+                <p class="placeholder-text">Select one or more symptoms on the dashboard and click "Run Diagnostics" to view predictions.</p>
+            </div>
+
+            <!-- Loading State -->
+            <div id="panel-loading" class="loading-state">
+                <div class="spinner"></div>
+                <h3>Running Inference</h3>
+                <p class="text-muted">Evaluating pattern trees against model boundaries...</p>
+            </div>
+
+            <!-- Prediction Results Output Panel -->
+            <div id="panel-result" class="diagnostic-result">
+                
+                <!-- Result Header -->
+                <div class="diagnostic-header">
+                    <div>
+                        <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 700;">Predicted Diagnosis</span>
+                        <h2 id="result-disease" class="prediction-title">COVID-19</h2>
+                    </div>
+                    <span id="result-severity" class="severity-badge severity-high">High Risk</span>
+                </div>
+
+                <!-- Confidence Score -->
+                <div class="confidence-section">
+                    <div class="confidence-meta">
+                        <span class="confidence-label">Model Confidence</span>
+                        <span id="result-confidence" class="confidence-value">85.0%</span>
+                    </div>
+                    <div class="bar-container">
+                        <div id="result-bar-fill" class="bar-fill"></div>
+                    </div>
+                </div>
+
+                <!-- Clinical Description Box -->
+                <div id="result-description" class="disease-desc-box">
+                    Clinical description placeholder.
+                </div>
+
+                <!-- Precautions Checklists -->
+                <div class="checklist-section">
+                    <h4 class="checklist-title">Self-Care & Safety Protocols</h4>
+                    <div id="result-precautions" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <!-- Generated Dynamically -->
+                    </div>
+                </div>
+
+                <!-- Technical summary toggle -->
+                <div class="technical-details">
+                    <button class="tech-summary-btn" onclick="toggleTechSummary()">
+                        ⚙️ Technical Pipeline Specs <span id="tech-arrow">▼</span>
+                    </button>
+                    <div id="tech-content" class="tech-summary-content">
+                        <p>This diagnosis is inferred using a Decision Tree Classifier trained on balanced multi-label dataset features.</p>
+                        <table>
+                            <tr>
+                                <td>Classifier Model</td>
+                                <td>DecisionTreeClassifier (scikit-learn)</td>
+                            </tr>
+                            <tr>
+                                <td>Model Parameters</td>
+                                <td>Criterion: Entropy | Max Depth: 10</td>
+                            </tr>
+                            <tr>
+                                <td>Training Accuracy</td>
+                                <td>76.25% (Stratified Split)</td>
+                            </tr>
+                            <tr>
+                                <td>Inputs Evaluated</td>
+                                <td id="tech-features-count">14 symptoms</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+
+</div>
+
+<script>
+    // Symptom state tracker (14 symptoms matched to backend feature columns)
+    const symptoms = {
+        fever: 0,
+        cough: 0,
+        headache: 0,
+        fatigue: 0,
+        sore_throat: 0,
+        runny_nose: 0,
+        body_ache: 0,
+        shortness_of_breath: 0,
+        loss_of_taste_smell: 0,
+        itchy_eyes: 0,
+        sneezing: 0,
+        nausea: 0,
+        joint_pain: 0,
+        skin_rash: 0
+    };
+
+    /**
+     * Toggles symptom selected state and visually updates the card
+     */
+    function toggleSymptom(name) {
+        const card = document.getElementById(`card-${name}`);
+        if (!card) return;
+
+        symptoms[name] = symptoms[name] === 0 ? 1 : 0;
+        
+        if (symptoms[name] === 1) {
+            card.classList.add('active');
+        } else {
+            card.classList.remove('active');
+        }
+    }
+
+    /**
+     * Resets all symptoms back to 0 and clears visual active classes
+     */
+    function resetSymptoms() {
+        // Reset states
+        for (let key in symptoms) {
+            symptoms[key] = 0;
+            const card = document.getElementById(`card-${key}`);
+            if (card) card.classList.remove('active');
+        }
+
+        // Reset output cards
+        document.getElementById('panel-result').style.display = 'none';
+        document.getElementById('panel-loading').style.display = 'none';
+        document.getElementById('panel-placeholder').style.display = 'flex';
+        
+        // Reset tech accordion
+        const content = document.getElementById('tech-content');
+        content.style.display = 'none';
+        document.getElementById('tech-arrow').innerText = '▼';
+    }
+
+    /**
+     * Toggles visibility of model technical pipeline specs
+     */
+    function toggleTechSummary() {
+        const content = document.getElementById('tech-content');
+        const arrow = document.getElementById('tech-arrow');
+        if (content.style.display === 'block') {
+            content.style.display = 'none';
+            arrow.innerText = '▼';
+        } else {
+            content.style.display = 'block';
+            arrow.style.animation = 'none';
+            arrow.innerText = '▲';
+        }
+    }
+
+    /**
+     * Toggle individual check items in precautions list
+     */
+    function togglePrecautionItem(index) {
+        const item = document.getElementById(`precaution-item-${index}`);
+        const checkbox = document.getElementById(`precaution-cb-${index}`);
+        if (!item || !checkbox) return;
+
+        // Sync visual states
+        if (checkbox.checked) {
+            item.classList.add('checked');
+        } else {
+            item.classList.remove('checked');
+        }
+    }
+
+    /**
+     * Submits selected symptoms payload to Flask backend, gets prediction and renders response
+     */
+    async function submitDiagnostic() {
+        const btnSubmit = document.getElementById('btn-submit');
+        const btnReset = document.getElementById('btn-reset');
+        
+        const panelPlaceholder = document.getElementById('panel-placeholder');
+        const panelLoading = document.getElementById('panel-loading');
+        const panelResult = document.getElementById('panel-result');
+
+        // Swap view panels
+        panelPlaceholder.style.display = 'none';
+        panelResult.style.display = 'none';
+        panelLoading.style.display = 'flex';
+
+        // Disable buttons
+        btnSubmit.disabled = true;
+        btnReset.disabled = true;
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(symptoms)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // 1. Render predicted disease
+                document.getElementById('result-disease').innerText = data.prediction;
+
+                // 2. Render severity badge
+                const severityEl = document.getElementById('result-severity');
+                severityEl.className = 'severity-badge'; // reset class
+                severityEl.innerText = `${data.severity} Severity`;
+                
+                if (data.severity.toLowerCase() === 'high') {
+                    severityEl.classList.add('severity-high');
+                } else if (data.severity.toLowerCase() === 'medium') {
+                    severityEl.classList.add('severity-medium');
+                } else {
+                    severityEl.classList.add('severity-low');
+                }
+
+                // 3. Render confidence indicator
+                document.getElementById('result-confidence').innerText = `${data.confidence}%`;
+                const fillBar = document.getElementById('result-bar-fill');
+                fillBar.style.width = '0%'; // reset first for transition animation
+                
+                // 4. Render clinical description
+                document.getElementById('result-description').innerText = data.description;
+
+                // 5. Render precautions checklist dynamically
+                const precautionsContainer = document.getElementById('result-precautions');
+                precautionsContainer.innerHTML = ''; // clear old items
+                
+                data.precautions.forEach((precaution, idx) => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'precaution-item';
+                    itemDiv.id = `precaution-item-${idx}`;
+                    itemDiv.setAttribute('onclick', `
+                        const cb = document.getElementById('precaution-cb-${idx}');
+                        cb.checked = !cb.checked;
+                        togglePrecautionItem(${idx});
+                    `);
+
+                    itemDiv.innerHTML = `
+                        <input type="checkbox" id="precaution-cb-${idx}" class="precaution-checkbox" onclick="event.stopPropagation(); togglePrecautionItem(${idx});">
+                        <span class="precaution-text">${precaution}</span>
+                    `;
+                    precautionsContainer.appendChild(itemDiv);
+                });
+
+                // Display evaluated active feature count in tech specs
+                const activeCount = Object.values(symptoms).filter(v => v === 1).length;
+                document.getElementById('tech-features-count').innerText = `${activeCount} active / 14 total symptoms`;
+
+                // Swap loading out and results in
+                panelLoading.style.display = 'none';
+                panelResult.style.display = 'flex';
+
+                // Trigger bar animation in next repaint frame
+                requestAnimationFrame(() => {
+                    fillBar.style.width = `${data.confidence}%`;
+                });
+
+            } else {
+                alert(`Prediction Error: ${data.error}`);
+                panelLoading.style.display = 'none';
+                panelPlaceholder.style.display = 'flex';
+            }
+
+        } catch (error) {
+            console.error('API Error:', error);
+            alert('Failed to connect to Flask API server. Make sure app.py is running.');
+            panelLoading.style.display = 'none';
+            panelPlaceholder.style.display = 'flex';
+        } finally {
+            // Restore actions
+            btnSubmit.disabled = false;
+            btnReset.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
