@@ -1,0 +1,8 @@
+{
+  "version": "2",
+  "model_type": "xgboost",
+  "f1_macro": 0.7473,
+  "accuracy": 0.7583,
+  "trigger": "retraining",
+  "promoted_at": "2026-10-11T07:03:20+00:00"
+}

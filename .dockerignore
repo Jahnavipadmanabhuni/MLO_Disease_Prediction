@@ -5,11 +5,12 @@ __pycache__/
 mlflow.db
 mlruns/
 mlartifacts/
-models/
+models/*
+!models/champion.joblib
+!models/champion_meta.json
 reports/
 data/production/
 .pytest_cache/
 .git
 .github
 tests
-data/production
